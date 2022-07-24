@@ -156,14 +156,17 @@ if __name__ == "__main__":
 
     # Using preset HighAccuracy for recording
     if args.record_rosbag or args.record_imgs:
-        depth_sensor.set_option(rs.option.visual_preset, Preset.HighAccuracy)
+        # depth_sensor.set_option(rs.option.visual_preset, Preset.HighAccuracy)
+        # depth_sensor.set_option(rs.option.visual_preset, Preset.HighDensity)
+        depth_sensor.set_option(rs.option.visual_preset, Preset.Default)
+        # depth_sensor.set_option(rs.option.visual_preset, Preset.Hand)
 
     # Getting the depth sensor's depth scale (see rs-align example for explanation)
     depth_scale = depth_sensor.get_depth_scale()
 
     # We will not display the background of objects more than
     #  clipping_distance_in_meters meters away
-    clipping_distance_in_meters = 3  # 3 meter
+    clipping_distance_in_meters = 1.0  # 3 meter
     clipping_distance = clipping_distance_in_meters / depth_scale
 
     # Create an align object
@@ -192,6 +195,7 @@ if __name__ == "__main__":
 
             depth_image = np.asanyarray(aligned_depth_frame.get_data())
             color_image = np.asanyarray(color_frame.get_data())
+            color_image = cv2.cvtColor(color_image, cv2.COLOR_BGR2RGB)
 
             if args.record_imgs:
                 if frame_count == 0:
@@ -216,8 +220,9 @@ if __name__ == "__main__":
             depth_colormap = cv2.applyColorMap(
                 cv2.convertScaleAbs(depth_image, alpha=0.09), cv2.COLORMAP_JET)
             images = np.hstack((bg_removed, depth_colormap))
+            tmp_images = cv2.resize(images, (1280, 480))
             cv2.namedWindow('Recorder Realsense', cv2.WINDOW_AUTOSIZE)
-            cv2.imshow('Recorder Realsense', images)
+            cv2.imshow('Recorder Realsense', tmp_images)
             key = cv2.waitKey(1)
 
             # if 'esc' button pressed, escape loop and exit program
